@@ -1,0 +1,50 @@
+# Packages needed for computing with matrices
+with(LinearAlgebra):
+with(LinearAlgebra[Modular]):
+###########################################################################
+# Function that identifies entries of a square matrix that do not         #
+# contribute to the determinant. Returns a matrix for which its           #
+# block diagonal form can easily be computed using an auxillary function. #
+###########################################################################
+Clarify := proc(A::Matrix, q::integer)
+local starttime, p, n, M, R, vars, gamma, B, V, i, j, gone;
+
+    starttime := time();
+    
+    # Initialize starting variables
+    if (_params['q'] = NULL) then
+        p := 2^31-1;
+    else
+        p := q;
+    fi;
+    n := RowDimension(A);
+    M := A;
+    R := rand(p):
+    vars := indets(M);
+    gone := 0; # Tracks the number of entries deleted
+
+    if (nops(vars) > 0) then
+        gamma := {seq(var = R(), var in vars)};
+        
+        # Construct image of A mod p by evaluating variables at random values
+        B := map( proc(x,y,p) Eval(x,y) mod p; end, M, gamma, p );
+
+        # Compute inverse of image mod p
+        V := Inverse(p,B,'RET');
+    else
+        V := Inverse(p,M,'RET');
+    fi;
+
+    # Main loop that identifies entries to be deleted
+    for i from 1 to n do
+        for j from 1 to n do
+            if (V[i,j] = 0) then
+                M[j,i] := 0;
+                gone := gone + 1;
+            fi;
+        od;
+    od;
+    printf("We have set %d entries equal to zero \nTotal computation time: %fs", gone, time() - starttime);
+return M;
+end:
+

@@ -1,0 +1,28 @@
+#############################################################
+# Generates random upper block triangular matrix with       #
+# with polynomial entries. Input the order of the matrix    #
+# and the number of sub-blocks needed. Possible to modify   #
+# degree, number of terms, and coefficients of polynomials. #
+#############################################################
+UpperBlock := proc(ord::integer, bloc::integer)
+local A, subord, i, j, spot;
+
+    A := Matrix(ord);
+    subord := floor(ord/bloc);
+
+    if (irem(ord,bloc,'q') = 0) then
+        for i from 1 to ord do
+        spot := floor((i-1)/subord)*subord;
+        for j from 1 to ord do
+            if(spot < j) then
+                A[i,j] := randpoly([w, y, z], degree=3, terms = 3, coeffs=rand(1..99));
+            fi;
+        od:
+    od:
+    else
+        printf("We cannot create %d blocks of equal size %d in a matrix of order %d \n", bloc, q, ord);
+        return FAIL;
+    fi;
+return A;
+end:
+
